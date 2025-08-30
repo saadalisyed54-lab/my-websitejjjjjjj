@@ -1562,6 +1562,8 @@
                 this.rawTranscript = '';
                 this.saveTasks();
                 this.renderTasks();
+                console.log("[v0] Task added:", newTask);
+                console.log("[v0] Total tasks after addition:", this.tasks.length);
                 this.showNotification(`Task #${newTask.id} added successfully!`);
             }
 
