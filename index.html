@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Enhanced overall design with unique styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            color: #1d1d1f;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            /* Added horizontal scroll for very long task names */
+            overflow-x: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 0 0 15px 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: #666;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Enhanced input section with swap functionality */
+        .input-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .swap-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 122, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 122, 255, 0.1);
+        }
+
+        .swap-input {
+            width: 80px;
+            padding: 12px;
+            border: 2px solid rgba(0, 122, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+
+        .swap-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1d1d1f;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn-voice {
+            background: linear-gradient(135deg, #ff3b30 0%, #ff9500 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);
+        }
+
+        .btn-voice:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 59, 48, 0.4);
+        }
+
+        .btn-voice.listening {
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn-correct {
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn-correct:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 199, 89, 0.4);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .theme-selector {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-btn.active {
+            border-color: #007aff;
+            transform: scale(1.15);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+        }
+
+        .lists-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .task-list {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            min-height: 350px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .list-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #1d1d1f;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced task item styling with better text handling and unique design */
+        .task-item {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(0, 0, 0, 0.05);
+            cursor: move;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: visible;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 
+                        0 1px 8px rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(10px);
+            border-left: 4px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .task-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15),
+                        0 5px 20px rgba(0, 122, 255, 0.1);
+            border-left-color: #007aff;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .task-id {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        /* Redesigned task name display to show full text cleanly without truncation */
+        .task-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 15px 0;
+            position: relative;
+            display: block;
+            width: 100%;
+            /* Allow natural text wrapping for clean display */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            /* Remove height restrictions to show full text */
+            min-height: auto;
+            max-height: none;
+            overflow: visible;
+            hyphens: none;
+        }
+
+        /* Removed marquee effect - keep text display simple and clean */
+        .task-name:hover {
+            color: #007aff;
+            transform: scale(1.02);
+            text-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+        }
+
+        /* Enhanced live task styling with better flame effects */
+        .task-item.live {
+            border: 3px solid transparent;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.9)) padding-box,
+                        linear-gradient(45deg, #ff6b6b, #ffa500, #ff4757, #ff6b6b) border-box;
+            animation: flameAnimation 2s ease-in-out infinite, flameBorder 3s linear infinite;
+            position: relative;
+            overflow: visible;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.4),
+                        0 0 60px rgba(255, 165, 0, 0.2),
+                        0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item.live .task-name {
+            font-weight: 800 !important;
+            text-align: center !important;
+            color: #1d1d1f !important;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.8),
+                         0 0 30px rgba(255, 165, 0, 0.6),
+                         0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: textGlow 2s ease-in-out infinite;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500, #ff6b6b);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes textGlow {
+            0%, 100% { 
+                filter: brightness(1) contrast(1);
+                transform: scale(1);
+            }
+            50% { 
+                filter: brightness(1.2) contrast(1.1);
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes flameBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Enhanced flame animation with more realistic fire effect */
+        @keyframes flameAnimation {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 107, 107, 0.6),
+                           0 0 40px rgba(255, 165, 0, 0.4),
+                           0 0 60px rgba(255, 69, 0, 0.2),
+                           0 10px 30px rgba(0, 0, 0, 0.1);
+                transform: scale(1);
+            }
+            25% {
+                box-shadow: 0 0 30px rgba(255, 165, 0, 0.8),
+                           0 0 50px rgba(255, 107, 107, 0.5),
+                           0 0 70px rgba(255, 20, 147, 0.3),
+                           0 10px 35px rgba(0, 0, 0, 0.15);
+                transform: scale(1.01);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(255, 69, 0, 0.7),
+                           0 0 45px rgba(255, 140, 0, 0.5),
+                           0 0 65px rgba(255, 107, 107, 0.3),
+                           0 10px 40px rgba(0, 0, 0, 0.12);
+                transform: scale(1.02);
+            }
+            75% {
+                box-shadow: 0 0 35px rgba(255, 20, 147, 0.6),
+                           0 0 55px rgba(255, 69, 0, 0.4),
+                           0 0 75px rgba(255, 165, 0, 0.2),
+                           0 10px 32px rgba(0, 0, 0, 0.1);
+                transform: scale(1.01);
+            }
+        }
+
+        .task-content {
+            /* Added flexible width container for task content */
+            width: 100%;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .task-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-live {
+            background: linear-gradient(135deg, #ff9500 0%, #ff6b6b 100%);
+            color: white;
+        }
+
+        .btn-complete {
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            color: white;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ff3b30 0%, #d70015 100%);
+            color: white;
+        }
+
+        .btn-restore {
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .dragging {
+            opacity: 0.6;
+            transform: rotate(3deg) scale(1.05);
+        }
+
+        .drag-over {
+            background: rgba(0, 122, 255, 0.1);
+            border-color: #007aff;
+        }
+
+        /* Enhanced theme system with 45 unique themes including macOS-inspired designs */
+        .theme-monterey {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-big-sur {
+            background: linear-gradient(-45deg, #a8edea, #fed6e3, #d299c2, #fef9d7);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-ventura {
+            background: linear-gradient(-45deg, #ff9a9e, #fecfef, #fecfef, #ff9a9e);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-sonoma {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #764ba2);
+            background-size: 400% 400%;
+            animation: gradientShift 25s ease infinite;
+            color: white;
+        }
+
+        .theme-sequoia {
+            background: linear-gradient(-45deg, #134e5e, #71b280, #134e5e, #71b280);
+            background-size: 400% 400%;
+            animation: gradientShift 22s ease infinite;
+            color: white;
+        }
+
+        .theme-catalina {
+            background: linear-gradient(-45deg, #1e3c72, #2a5298, #1e3c72, #2a5298);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: white;
+        }
+
+        .theme-mojave {
+            background: linear-gradient(-45deg, #2c1810, #8b4513, #2c1810, #8b4513);
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+            color: #f5f5f7;
+        }
+
+        .theme-high-sierra {
+            background: linear-gradient(-45deg, #4b79a1, #283e51, #4b79a1, #283e51);
+            background-size: 400% 400%;
+            animation: gradientShift 25s ease infinite;
+            color: white;
+        }
+
+        .theme-sierra {
+            background: linear-gradient(-45deg, #ff7e5f, #feb47b, #ff7e5f, #feb47b);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-el-capitan {
+            background: linear-gradient(-45deg, #2980b9, #6bb6ff, #2980b9, #6bb6ff);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: white;
+        }
+
+        .theme-yosemite {
+            background: linear-gradient(-45deg, #56ab2f, #a8e6cf, #56ab2f, #a8e6cf);
+            background-size: 400% 400%;
+            animation: gradientShift 22s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-mavericks {
+            background: linear-gradient(-45deg, #0f4c75, #3282b8, #0f4c75, #3282b8);
+            background-size: 400% 400%;
+            animation: gradientShift 28s ease infinite;
+            color: white;
+        }
+
+        .theme-mountain-lion {
+            background: linear-gradient(-45deg, #8360c3, #2ebf91, #8360c3, #2ebf91);
+            background-size: 400% 400%;
+            animation: gradientShift 24s ease infinite;
+            color: white;
+        }
+
+        .theme-lion {
+            background: linear-gradient(-45deg, #ffecd2, #fcb69f, #ffecd2, #fcb69f);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-snow-leopard {
+            background: linear-gradient(-45deg, #e0c3fc, #9bb5ff, #e0c3fc, #9bb5ff);
+            background-size: 400% 400%;
+            animation: gradientShift 26s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-leopard {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #764ba2);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            color: white;
+        }
+
+        .theme-neon-dreams {
+            background: linear-gradient(-45deg, #0f0f23, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #00ffff;
+            position: relative;
+        }
+        .theme-neon-dreams::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, #ff00ff 0%, transparent 50%), 
+                        radial-gradient(circle at 80% 20%, #00ffff 0%, transparent 50%);
+            animation: neonPulse 8s ease-in-out infinite;
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .theme-aurora-magic {
+            background: linear-gradient(-45deg, #001122, #003366, #004488, #0066aa);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: #ffffff;
+            position: relative;
+        }
+        .theme-aurora-magic::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, #00ff88, #88ff00, transparent);
+            animation: auroraWave 12s linear infinite;
+            opacity: 0.4;
+            z-index: -1;
+        }
+
+        .theme-cyber-punk {
+            background: linear-gradient(-45deg, #0a0a0a, #1a0033, #330066, #660099);
+            background-size: 400% 400%;
+            animation: gradientShift 10s ease infinite;
+            color: #ff00ff;
+            position: relative;
+        }
+        .theme-cyber-punk::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(90deg, transparent, transparent 98px, #ff00ff 100px);
+            animation: scanlines 3s linear infinite;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .theme-ocean-depths {
+            background: linear-gradient(-45deg, #001133, #002244, #003355, #004466);
+            background-size: 400% 400%;
+            animation: gradientShift 25s ease infinite;
+            color: #66ccff;
+            position: relative;
+        }
+        .theme-ocean-depths::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(102, 204, 255, 0.3) 0%, transparent 70%);
+            animation: oceanWaves 15s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        .theme-volcanic-fire {
+            background: linear-gradient(-45deg, #330000, #660000, #990000, #cc3300);
+            background-size: 400% 400%;
+            animation: gradientShift 12s ease infinite;
+            color: #ffaa00;
+            position: relative;
+        }
+        .theme-volcanic-fire::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 100%, #ff4500 0%, transparent 70%);
+            animation: volcanoGlow 8s ease-in-out infinite;
+            opacity: 0.4;
+            z-index: -1;
+        }
+
+        .theme-forest-whisper {
+            background: linear-gradient(-45deg, #134e5e, #71b280, #2d5016, #a8e6cf);
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-sunset-glow {
+            background: linear-gradient(-45deg, #ff7e5f, #feb47b, #ff6b6b, #ffa726);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-midnight-blue {
+            background: linear-gradient(-45deg, #2c3e50, #3498db, #2980b9, #34495e);
+            background-size: 400% 400%;
+            animation: gradientShift 25s ease infinite;
+            color: #ecf0f1;
+        }
+
+        .theme-rose-gold {
+            background: linear-gradient(-45deg, #f093fb, #f5576c, #ff9a9e, #fecfef);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-emerald-city {
+            background: linear-gradient(-45deg, #11998e, #38ef7d, #2dd4bf, #059669);
+            background-size: 400% 400%;
+            animation: gradientShift 22s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-purple-haze {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #8360c3, #9c27b0);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-golden-hour {
+            background: linear-gradient(-45deg, #f7971e, #ffd200, #ffb347, #ff8c00);
+            background-size: 400% 400%;
+            animation: gradientShift 16s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-arctic-frost {
+            background: linear-gradient(-45deg, #74b9ff, #0984e3, #a29bfe, #6c5ce7);
+            background-size: 400% 400%;
+            animation: gradientShift 24s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-cherry-blossom {
+            background: linear-gradient(-45deg, #ffeef8, #ffb3d9, #ff80bf, #ff4da6);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-cosmic-dust {
+            background: linear-gradient(-45deg, #2c1810, #8b4513, #4a4a4a, #2f2f2f);
+            background-size: 400% 400%;
+            animation: gradientShift 28s ease infinite;
+            color: #f5f5f7;
+            position: relative;
+        }
+        .theme-cosmic-dust::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: starTwinkle 10s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        .theme-electric-blue {
+            background: linear-gradient(-45deg, #0066ff, #00ccff, #0099ff, #3366ff);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-mint-fresh {
+            background: linear-gradient(-45deg, #00d2ff, #3a7bd5, #00b4db, #0083b0);
+            background-size: 400% 400%;
+            animation: gradientShift 22s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-lavender-dream {
+            background: linear-gradient(-45deg, #e0c3fc, #9bb5ff, #c3a3ff, #b19cd9);
+            background-size: 400% 400%;
+            animation: gradientShift 26s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-coral-reef {
+            background: linear-gradient(-45deg, #ff7f7f, #ff9999, #ffb3b3, #ffcccc);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-steel-gray {
+            background: linear-gradient(-45deg, #4a4a4a, #6a6a6a, #8a8a8a, #aaaaaa);
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-tropical-sunset {
+            background: linear-gradient(-45deg, #ff6b6b, #ffa500, #ff1744, #ff9800);
+            background-size: 400% 400%;
+            animation: gradientShift 14s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-deep-space {
+            background: linear-gradient(-45deg, #000428, #004e92, #001122, #003366);
+            background-size: 400% 400%;
+            animation: gradientShift 35s ease infinite;
+            color: #ffffff;
+            position: relative;
+        }
+        .theme-deep-space::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 30%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 30%),
+                        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
+            animation: starField 20s linear infinite;
+            z-index: -1;
+        }
+
+        .theme-rainbow-prism {
+            background: linear-gradient(-45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-monochrome-elegance {
+            background: linear-gradient(-45deg, #ffffff, #f0f0f0, #e0e0e0, #d0d0d0);
+            background-size: 400% 400%;
+            animation: gradientShift 40s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-retro-wave {
+            background: linear-gradient(-45deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
+            background-size: 400% 400%;
+            animation: gradientShift 12s ease infinite;
+            color: #ffffff;
+            position: relative;
+        }
+        .theme-retro-wave::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(255, 255, 255, 0.03) 22px);
+            z-index: -1;
+        }
+
+        .theme-autumn-leaves {
+            background: linear-gradient(-45deg, #d2691e, #ff8c00, #ff6347, #cd853f);
+            background-size: 400% 400%;
+            animation: gradientShift 25s ease infinite;
+            color: #ffffff;
+        }
+
+        .theme-winter-frost {
+            background: linear-gradient(-45deg, #b3e5fc, #81d4fa, #4fc3f7, #29b6f6);
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-spring-bloom {
+            background: linear-gradient(-45deg, #c8e6c9, #a5d6a7, #81c784, #66bb6a);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-summer-breeze {
+            background: linear-gradient(-45deg, #fff9c4, #f4ff81, #eeff41, #c6ff00);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            color: #1d1d1f;
+        }
+
+        .theme-holographic-dream {
+            background: linear-gradient(-45deg, #ff00ff, #00ffff, #ffff00, #ff00ff);
+            background-size: 400% 400%;
+            animation: gradientShift 6s ease infinite;
+            color: #ffffff;
+            position: relative;
+        }
+        .theme-holographic-dream::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: holographicShimmer 3s linear infinite;
+            z-index: -1;
+        }
+
+        /* Animation keyframes for all theme effects */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes neonPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes auroraWave {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes oceanWaves {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        @keyframes volcanoGlow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes starField {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100px); }
+        }
+
+        @keyframes holographicShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .lists-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .theme-selector {
+                gap: 8px;
+            }
+            
+            .theme-btn {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+            .theme-electric-sparks {
+                background: linear-gradient(135deg, #000033 0%, #001166 50%, #000033 100%);
+                animation: electricSparks 2s infinite;
+            }
+            
+            @keyframes electricSparks {
+                0%, 100% { box-shadow: 0 0 20px #ffff00, inset 0 0 20px rgba(255,255,0,0.1); }
+                25% { box-shadow: 0 0 30px #00ffff, inset 0 0 30px rgba(0,255,255,0.2); }
+                50% { box-shadow: 0 0 40px #ff00ff, inset 0 0 40px rgba(255,0,255,0.2); }
+                75% { box-shadow: 0 0 30px #ffff00, inset 0 0 30px rgba(255,255,0,0.1); }
+            }
+
+            .theme-cosmic-galaxy {
+                background: radial-gradient(circle at 20% 50%, #120458 0%, #000000 50%, #120458 100%);
+                animation: cosmicGalaxy 4s infinite linear;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .theme-cosmic-galaxy::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+                           radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                           radial-gradient(1px 1px at 90px 40px, #fff, transparent);
+                animation: starField 8s infinite linear;
+            }
+            
+            @keyframes cosmicGalaxy {
+                0% { background-position: 0% 50%; }
+                100% { background-position: 100% 50%; }
+            }
+            
+            @keyframes starField {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-100px); }
+            }
+
+            .theme-neon-pulse {
+                background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #0f0f0f 100%);
+                animation: neonPulse 1.5s infinite alternate;
+            }
+            
+            @keyframes neonPulse {
+                0% { 
+                    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, inset 0 0 20px rgba(0,255,255,0.1);
+                    border: 2px solid #00ffff;
+                }
+                100% { 
+                    box-shadow: 0 0 40px #ff00ff, 0 0 80px #ff00ff, inset 0 0 40px rgba(255,0,255,0.2);
+                    border: 2px solid #ff00ff;
+                }
+            }
+
+            .theme-liquid-lava {
+                background: linear-gradient(135deg, #330000 0%, #660000 25%, #ff3300 50%, #ff6600 75%, #330000 100%);
+                background-size: 400% 400%;
+                animation: liquidLava 3s infinite;
+            }
+            
+            @keyframes liquidLava {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+
+            .theme-aurora-glow {
+                background: linear-gradient(135deg, #001122 0%, #003344 25%, #00ff88 50%, #0066cc 75%, #001122 100%);
+                background-size: 300% 300%;
+                animation: auroraGlow 4s infinite;
+            }
+            
+            @keyframes auroraGlow {
+                0% { background-position: 0% 0%; }
+                25% { background-position: 100% 0%; }
+                50% { background-position: 100% 100%; }
+                75% { background-position: 0% 100%; }
+                100% { background-position: 0% 0%; }
+            }
+
+            .theme-cyber-grid {
+                background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .theme-cyber-grid::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image: 
+                    linear-gradient(rgba(0,255,0,0.3) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,255,0,0.3) 1px, transparent 1px);
+                background-size: 20px 20px;
+                animation: cyberGrid 2s infinite linear;
+            }
+            
+            @keyframes cyberGrid {
+                0% { transform: translate(0, 0); }
+                100% { transform: translate(20px, 20px); }
+            }
+
+            .theme-sonic-waves {
+                background: radial-gradient(circle at center, #001133 0%, #003366 50%, #0099ff 100%);
+                animation: sonicWaves 2s infinite;
+            }
+            
+            @keyframes sonicWaves {
+                0% { box-shadow: 0 0 0 0 rgba(0,153,255,0.7); }
+                50% { box-shadow: 0 0 0 20px rgba(0,153,255,0.3); }
+                100% { box-shadow: 0 0 0 40px rgba(0,153,255,0); }
+            }
+
+            .theme-crystal-shine {
+                background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 50%, #99ccff 100%);
+                animation: crystalShine 2s infinite alternate;
+                position: relative;
+            }
+            
+            .theme-crystal-shine::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+                animation: crystalSweep 3s infinite;
+            }
+            
+            @keyframes crystalShine {
+                0% { filter: brightness(1) contrast(1); }
+                100% { filter: brightness(1.2) contrast(1.1); }
+            }
+            
+            @keyframes crystalSweep {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+
+            .theme-wild-jungle {
+                background: linear-gradient(135deg, #003300 0%, #006600 50%, #66cc00 100%);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .theme-wild-jungle::before {
+                content: '🌿🍃🌱';
+                position: absolute;
+                top: 50%;
+                left: 0;
+                transform: translateY(-50%);
+                font-size: 20px;
+                animation: jungleGrow 4s infinite linear;
+                white-space: nowrap;
+            }
+            
+            @keyframes jungleGrow {
+                0% { left: -100px; }
+                100% { left: 100%; }
+            }
+
+            .theme-fireworks-burst {
+                background: radial-gradient(circle at 30% 40%, #000033 0%, #330066 50%, #ff3366 100%);
+                animation: fireworksBurst 1s infinite;
+            }
+            
+            @keyframes fireworksBurst {
+                0% { 
+                    box-shadow: 0 0 20px #ff3366;
+                    transform: scale(1);
+                }
+                50% { 
+                    box-shadow: 0 0 40px #ffff00, 0 0 60px #ff3366, 0 0 80px #00ffff;
+                    transform: scale(1.05);
+                }
+                100% { 
+                    box-shadow: 0 0 20px #ff3366;
+                    transform: scale(1);
+                }
+            }
+
+            /* Enhanced drag and drop visual feedback */
+            .task-item.dragging {
+                opacity: 0.5 !important;
+                transform: rotate(5deg);
+                transition: all 0.2s ease;
+            }
+            
+            .task-item.drag-over {
+                border: 2px dashed #00ffff !important;
+                background: rgba(0,255,255,0.1) !important;
+                transform: scale(1.02);
+                transition: all 0.2s ease;
+            }
+            
+            .tasks.drag-over {
+                background: rgba(0,255,255,0.05);
+                border-radius: 10px;
+            }
+    </style>
+</head>
+<body class="theme-monterey">
+    <div class="background-animation"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Task Manager Pro</h1>
+            <p>Organize your life with style, intelligence, and unique ID tracking</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="taskInput" class="task-input" placeholder="Enter your task here...">
+                <button id="addTaskBtn" class="btn btn-primary">Add Task</button>
+                <button id="voiceBtn" class="btn btn-voice">🎤 Voice</button>
+                <button id="correctBtn" class="btn btn-correct">✨ Correct Text</button>
+            </div>
+
+            <!-- Added swap functionality section -->
+            <div class="swap-section">
+                <label style="font-weight: 600; color: #1d1d1f;">Swap Tasks by ID:</label>
+                <input type="number" id="swapId1" class="swap-input" placeholder="ID 1" min="1">
+                <span style="font-weight: 600; color: #666;">↔</span>
+                <input type="number" id="swapId2" class="swap-input" placeholder="ID 2" min="1">
+                <button id="swapBtn" class="btn btn-primary">Swap Tasks</button>
+            </div>
+
+            <div class="theme-selector">
+                <div class="theme-btn active" data-theme="monterey" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                <div class="theme-btn" data-theme="big-sur" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
+                <div class="theme-btn" data-theme="ventura" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"></div>
+                <div class="theme-btn" data-theme="sonoma" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                <div class="theme-btn" data-theme="sequoia" style="background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);"></div>
+                <div class="theme-btn" data-theme="catalina" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);"></div>
+                <div class="theme-btn" data-theme="mojave" style="background: linear-gradient(135deg, #2c1810 0%, #8b4513 100%);"></div>
+                <div class="theme-btn" data-theme="high-sierra" style="background: linear-gradient(135deg, #4b79a1 0%, #283e51 100%);"></div>
+                <div class="theme-btn" data-theme="sierra" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                <div class="theme-btn" data-theme="el-capitan" style="background: linear-gradient(135deg, #2980b9 0%, #6bb6ff 100%);"></div>
+                <div class="theme-btn" data-theme="yosemite" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);"></div>
+                <div class="theme-btn" data-theme="mavericks" style="background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);"></div>
+                <div class="theme-btn" data-theme="mountain-lion" style="background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%);"></div>
+                <div class="theme-btn" data-theme="lion" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);"></div>
+                <div class="theme-btn" data-theme="snow-leopard" style="background: linear-gradient(135deg, #e0c3fc 0%, #9bb5ff 100%);"></div>
+                <div class="theme-btn" data-theme="leopard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                <div class="theme-btn" data-theme="neon-dreams" style="background: linear-gradient(135deg, #0f0f23 0%, #00ffff 100%);"></div>
+                <div class="theme-btn" data-theme="aurora-magic" style="background: linear-gradient(135deg, #001122 0%, #00ff88 100%);"></div>
+                <div class="theme-btn" data-theme="cyber-punk" style="background: linear-gradient(135deg, #0a0a0a 0%, #ff00ff 100%);"></div>
+                <div class="theme-btn" data-theme="ocean-depths" style="background: linear-gradient(135deg, #001133 0%, #66ccff 100%);"></div>
+                <div class="theme-btn" data-theme="volcanic-fire" style="background: linear-gradient(135deg, #330000 0%, #ffaa00 100%);"></div>
+                <div class="theme-btn" data-theme="forest-whisper" style="background: linear-gradient(135deg, #134e5e 0%, #a8e6cf 100%);"></div>
+                <div class="theme-btn" data-theme="sunset-glow" style="background: linear-gradient(135deg, #ff7e5f 0%, #ffa726 100%);"></div>
+                <div class="theme-btn" data-theme="midnight-blue" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);"></div>
+                <div class="theme-btn" data-theme="rose-gold" style="background: linear-gradient(135deg, #f093fb 0%, #fecfef 100%);"></div>
+                <div class="theme-btn" data-theme="emerald-city" style="background: linear-gradient(135deg, #11998e 0%, #059669 100%);"></div>
+                <div class="theme-btn" data-theme="purple-haze" style="background: linear-gradient(135deg, #667eea 0%, #9c27b0 100%);"></div>
+                <div class="theme-btn" data-theme="golden-hour" style="background: linear-gradient(135deg, #f7971e 0%, #ff8c00 100%);"></div>
+                <div class="theme-btn" data-theme="arctic-frost" style="background: linear-gradient(135deg, #74b9ff 0%, #6c5ce7 100%);"></div>
+                <div class="theme-btn" data-theme="cherry-blossom" style="background: linear-gradient(135deg, #ffeef8 0%, #ff4da6 100%);"></div>
+                <div class="theme-btn" data-theme="cosmic-dust" style="background: linear-gradient(135deg, #2c1810 0%, #2f2f2f 100%);"></div>
+                <div class="theme-btn" data-theme="electric-blue" style="background: linear-gradient(135deg, #0066ff 0%, #3366ff 100%);"></div>
+                <div class="theme-btn" data-theme="mint-fresh" style="background: linear-gradient(135deg, #00d2ff 0%, #0083b0 100%);"></div>
+                <div class="theme-btn" data-theme="lavender-dream" style="background: linear-gradient(135deg, #e0c3fc 0%, #b19cd9 100%);"></div>
+                <div class="theme-btn" data-theme="coral-reef" style="background: linear-gradient(135deg, #ff7f7f 0%, #ffcccc 100%);"></div>
+                <div class="theme-btn" data-theme="steel-gray" style="background: linear-gradient(135deg, #4a4a4a 0%, #aaaaaa 100%);"></div>
+                <div class="theme-btn" data-theme="tropical-sunset" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff9800 100%);"></div>
+                <div class="theme-btn" data-theme="deep-space" style="background: linear-gradient(135deg, #000428 0%, #003366 100%);"></div>
+                <div class="theme-btn" data-theme="rainbow-prism" style="background: linear-gradient(135deg, #ff0000 0%, #9400d3 100%);"></div>
+                <div class="theme-btn" data-theme="monochrome-elegance" style="background: linear-gradient(135deg, #ffffff 0%, #d0d0d0 100%);"></div>
+                <div class="theme-btn" data-theme="retro-wave" style="background: linear-gradient(135deg, #ff006e 0%, #06ffa5 100%);"></div>
+                <div class="theme-btn" data-theme="autumn-leaves" style="background: linear-gradient(135deg, #d2691e 0%, #cd853f 100%);"></div>
+                <div class="theme-btn" data-theme="winter-frost" style="background: linear-gradient(135deg, #b3e5fc 0%, #29b6f6 100%);"></div>
+                <div class="theme-btn" data-theme="spring-bloom" style="background: linear-gradient(135deg, #c8e6c9 0%, #66bb6a 100%);"></div>
+                <div class="theme-btn" data-theme="summer-breeze" style="background: linear-gradient(135deg, #fff9c4 0%, #c6ff00 100%);"></div>
+                <div class="theme-btn" data-theme="holographic-dream" style="background: linear-gradient(135deg, #ff00ff 0%, #ffff00 100%);"></div>
+                <div class="theme-btn" data-theme="electric-sparks" style="background: linear-gradient(135deg, #000033 0%, #ffff00 100%);"></div>
+                <div class="theme-btn" data-theme="cosmic-galaxy" style="background: linear-gradient(135deg, #0a0a2e 0%, #16213e 100%);"></div>
+                <div class="theme-btn" data-theme="neon-pulse" style="background: linear-gradient(135deg, #0f0f0f 0%, #00ffff 100%);"></div>
+                <div class="theme-btn" data-theme="liquid-lava" style="background: linear-gradient(135deg, #330000 0%, #ff6600 100%);"></div>
+                <div class="theme-btn" data-theme="aurora-glow" style="background: linear-gradient(135deg, #001122 0%, #00ff88 100%);"></div>
+                <div class="theme-btn" data-theme="cyber-grid" style="background: linear-gradient(135deg, #0a0a0a 0%, #00ff00 100%);"></div>
+                <div class="theme-btn" data-theme="sonic-waves" style="background: linear-gradient(135deg, #001133 0%, #0099ff 100%);"></div>
+                <div class="theme-btn" data-theme="crystal-shine" style="background: linear-gradient(135deg, #e6f3ff 0%, #99ccff 100%);"></div>
+                <div class="theme-btn" data-theme="wild-jungle" style="background: linear-gradient(135deg, #003300 0%, #66cc00 100%);"></div>
+                <div class="theme-btn" data-theme="fireworks-burst" style="background: linear-gradient(135deg, #000033 0%, #ff3366 100%);"></div>
+            </div>
+        </div>
+
+        <div class="lists-container">
+            <div class="task-list" id="pendingList">
+                <h2 class="list-title">📋 Pending Tasks</h2>
+                <div class="tasks" data-list="pending"></div>
+            </div>
+
+            <div class="task-list" id="completedList">
+                <h2 class="list-title">✅ Completed Tasks</h2>
+                <div class="tasks" data-list="completed"></div>
+            </div>
+
+            <div class="task-list" id="recycleBin">
+                <h2 class="list-title">🗑️ Recycle Bin</h2>
+                <div class="tasks" data-list="recycle"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        class TaskManager {
+            constructor() {
+                this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                this.liveTasksCount = 0;
+                this.recognition = null;
+                this.isListening = false;
+                this.rawTranscript = '';
+                this.microphonePermission = localStorage.getItem('microphonePermission') === 'granted';
+                this.nextTaskId = parseInt(localStorage.getItem('nextTaskId')) || 1;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.renderTasks();
+                this.setupSpeechRecognition();
+                this.updateLiveTasksCount();
+            }
+
+            initializeElements() {
+                this.taskInput = document.getElementById('taskInput');
+                this.addTaskBtn = document.getElementById('addTaskBtn');
+                this.voiceBtn = document.getElementById('voiceBtn');
+                this.correctBtn = document.getElementById('correctBtn');
+                this.swapId1 = document.getElementById('swapId1');
+                this.swapId2 = document.getElementById('swapId2');
+                this.swapBtn = document.getElementById('swapBtn');
+                this.notification = document.getElementById('notification');
+                this.pendingList = document.querySelector('[data-list="pending"]');
+                this.completedList = document.querySelector('[data-list="completed"]');
+                this.recycleList = document.querySelector('[data-list="recycle"]');
+            }
+
+            setupEventListeners() {
+                this.addTaskBtn.addEventListener('click', () => this.addTask());
+                this.taskInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addTask();
+                });
+                this.voiceBtn.addEventListener('click', () => this.toggleVoiceRecording());
+                this.correctBtn.addEventListener('click', () => this.correctText());
+                this.swapBtn.addEventListener('click', () => this.swapTasks());
+
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const themeName = btn.dataset.theme;
+                        if (themeName) {
+                            this.changeTheme(themeName);
+                        }
+                    });
+                });
+
+                this.setupDragAndDrop();
+            }
+
+            /* Enhanced permission handling to prevent repeated browser prompts */
+            async setupSpeechRecognition() {
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    this.showNotification('Speech recognition not supported in this browser.');
+                    this.voiceBtn.disabled = true;
+                    return;
+                }
+
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.recognition = new SpeechRecognition();
+                
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
+                this.recognition.lang = 'en-US';
+
+                this.recognition.onstart = () => {
+                    this.isListening = true;
+                    this.voiceBtn.textContent = '🛑 Stop';
+                    this.voiceBtn.classList.add('listening');
+                    this.showNotification('Listening... Click stop when finished.');
+                };
+
+                this.recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    if (finalTranscript) {
+                        this.rawTranscript = finalTranscript.trim();
+                        this.taskInput.value = this.rawTranscript;
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    this.stopListening();
+                    if (event.error === 'not-allowed') {
+                        this.showNotification('Microphone access denied. Please allow microphone access and try again.');
+                        localStorage.setItem('microphonePermission', 'denied');
+                    } else {
+                        this.showNotification('Speech recognition error: ' + event.error);
+                    }
+                };
+
+                this.recognition.onend = () => {
+                    this.stopListening();
+                };
+            }
+
+            async toggleVoiceRecording() {
+                if (!this.recognition) {
+                    this.showNotification('Speech recognition not available.');
+                    return;
+                }
+
+                if (this.isListening) {
+                    this.recognition.stop();
+                    return;
+                }
+
+                try {
+                    if (!this.microphonePermission) {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        stream.getTracks().forEach(track => track.stop());
+                        localStorage.setItem('microphonePermission', 'granted');
+                        this.microphonePermission = true;
+                    }
+                    
+                    this.rawTranscript = '';
+                    this.recognition.start();
+                } catch (error) {
+                    console.error('Microphone access error:', error);
+                    this.showNotification('Unable to access microphone. Please check permissions.');
+                    localStorage.setItem('microphonePermission', 'denied');
+                    this.microphonePermission = false;
+                }
+            }
+
+            stopListening() {
+                this.isListening = false;
+                this.voiceBtn.textContent = '🎤 Voice';
+                this.voiceBtn.classList.remove('listening');
+                if (this.rawTranscript) {
+                    this.showNotification('Speech captured. Click "Correct Text" to improve it, then "Add Task".');
+                }
+            }
+
+            correctText() {
+                const text = this.taskInput.value.trim();
+                if (!text) {
+                    this.showNotification('Please enter some text first.');
+                    return;
+                }
+
+                const correctedText = this.applyIntelligentCorrection(text);
+                this.taskInput.value = correctedText;
+                this.showNotification('Text corrected and improved!');
+            }
+
+            applyIntelligentCorrection(text) {
+                // Convert to proper case
+                let corrected = text.toLowerCase();
+                
+                // Capitalize first letter
+                corrected = corrected.charAt(0).toUpperCase() + corrected.slice(1);
+                
+                // Common corrections and improvements
+                const corrections = {
+                    // Common misspellings
+                    'recieve': 'receive', 'seperate': 'separate', 'definately': 'definitely',
+                    'occured': 'occurred', 'begining': 'beginning', 'writting': 'writing',
+                    'runing': 'running', 'geting': 'getting', 'puting': 'putting',
+                    'stoping': 'stopping', 'planing': 'planning', 'controling': 'controlling',
+                    
+                    // Task-specific improvements
+                    'call mom': 'Call Mom', 'call dad': 'Call Dad',
+                    'buy groceries': 'Buy groceries', 'do laundry': 'Do laundry',
+                    'clean house': 'Clean house', 'walk dog': 'Walk the dog',
+                    'pay bills': 'Pay bills', 'book appointment': 'Book appointment',
+                    'send email': 'Send email', 'finish project': 'Finish project',
+                    'review document': 'Review document', 'update website': 'Update website',
+                    
+                    // Common abbreviations
+                    ' u ': ' you ', ' ur ': ' your ', ' r ': ' are ',
+                    ' n ': ' and ', ' w/ ': ' with ', ' w/o ': ' without ',
+                    'tmrw': 'tomorrow', 'tonite': 'tonight', 'thru': 'through',
+                    
+                    // Grammar improvements
+                    'i ': 'I ', ' i ': ' I ', 'dont': "don't", 'cant': "can't",
+                    'wont': "won't", 'shouldnt': "shouldn't", 'couldnt': "couldn't",
+                    'wouldnt': "wouldn't", 'isnt': "isn't", 'arent': "aren't",
+                    'wasnt': "wasn't", 'werent': "weren't", 'hasnt': "hasn't",
+                    'havent': "haven't", 'hadnt': "hadn't", 'didnt': "didn't"
+                };
+                
+                // Apply corrections
+                for (const [wrong, right] of Object.entries(corrections)) {
+                    const regex = new RegExp('\\b' + wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+                    corrected = corrected.replace(regex, right);
+                }
+                
+                // Remove extra spaces
+                corrected = corrected.replace(/\s+/g, ' ').trim();
+                
+                // Ensure proper ending punctuation for sentences
+                if (corrected.length > 10 && !corrected.match(/[.!?]$/)) {
+                    // Don't add period to short commands or titles
+                    const shortCommands = ['call', 'buy', 'send', 'book', 'pay', 'clean', 'walk', 'do', 'finish', 'review', 'update'];
+                    const startsWithCommand = shortCommands.some(cmd => corrected.toLowerCase().startsWith(cmd));
+                    if (!startsWithCommand) {
+                        corrected += '.';
+                    }
+                }
+                
+                return corrected;
+            }
+
+            addTask() {
+                const taskName = this.taskInput.value.trim();
+                if (!taskName) {
+                    this.showNotification('Please enter a task name.');
+                    return;
+                }
+
+                const newTask = {
+                    id: this.nextTaskId,
+                    name: taskName,
+                    status: 'pending',
+                    createdAt: new Date().toISOString(),
+                    isLive: false
+                };
+
+                this.tasks.push(newTask);
+                this.nextTaskId++;
+                localStorage.setItem('nextTaskId', this.nextTaskId.toString());
+                
+                this.taskInput.value = '';
+                this.rawTranscript = '';
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification(`Task #${newTask.id} added successfully!`);
+            }
+
+            swapTasks() {
+                const id1 = parseInt(this.swapId1.value);
+                const id2 = parseInt(this.swapId2.value);
+
+                if (!id1 || !id2) {
+                    this.showNotification('Please enter both task IDs to swap.');
+                    return;
+                }
+
+                if (id1 === id2) {
+                    this.showNotification('Please enter different task IDs.');
+                    return;
+                }
+
+                const task1Index = this.tasks.findIndex(task => task.id === id1);
+                const task2Index = this.tasks.findIndex(task => task.id === id2);
+
+                if (task1Index === -1) {
+                    this.showNotification(`Task with ID ${id1} not found.`);
+                    return;
+                }
+
+                if (task2Index === -1) {
+                    this.showNotification(`Task with ID ${id2} not found.`);
+                    return;
+                }
+
+                // Swap the tasks in the array
+                [this.tasks[task1Index], this.tasks[task2Index]] = [this.tasks[task2Index], this.tasks[task1Index]];
+
+                this.swapId1.value = '';
+                this.swapId2.value = '';
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification(`Successfully swapped Task #${id1} with Task #${id2}!`);
+            }
+
+            deleteTask(taskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (!task) return;
+
+                if (task.status === 'recycle') {
+                    this.tasks = this.tasks.filter(t => t.id !== taskId);
+                    this.showNotification('Task permanently deleted.');
+                } else {
+                    task.status = 'recycle';
+                    if (task.isLive) {
+                        task.isLive = false;
+                        this.liveTasksCount--;
+                    }
+                    this.showNotification('Task moved to recycle bin.');
+                }
+
+                this.saveTasks();
+                this.renderTasks();
+            }
+
+            toggleLive(taskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (!task || task.status !== 'pending') return;
+
+                if (task.isLive) {
+                    task.isLive = false;
+                    this.liveTasksCount--;
+                    this.showNotification('Task removed from live status.');
+                } else {
+                    if (this.liveTasksCount >= 2) {
+                        this.showNotification('Maximum 2 live tasks allowed.');
+                        return;
+                    }
+                    task.isLive = true;
+                    this.liveTasksCount++;
+                    this.showNotification('Task is now live!');
+                }
+
+                this.saveTasks();
+                this.renderTasks();
+            }
+
+            completeTask(taskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (!task || task.status !== 'pending') return;
+
+                // Check sequential completion rule
+                const pendingTasks = this.tasks
+                    .filter(t => t.status === 'pending')
+                    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+                const taskIndex = pendingTasks.findIndex(t => t.id === taskId);
+                if (taskIndex > 0) {
+                    this.showNotification('Please complete tasks in order. Complete the earlier tasks first.');
+                    return;
+                }
+
+                task.status = 'completed';
+                task.completedAt = new Date().toISOString();
+                if (task.isLive) {
+                    task.isLive = false;
+                    this.liveTasksCount--;
+                }
+
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification('Task completed!');
+            }
+
+            restoreTask(taskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (!task || task.status !== 'recycle') return;
+
+                task.status = 'pending';
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification('Task restored to pending.');
+            }
+
+            updateLiveTasksCount() {
+                this.liveTasksCount = this.tasks.filter(t => t.isLive).length;
+            }
+
+            copyTaskName(taskName) {
+                navigator.clipboard.writeText(taskName).then(() => {
+                    this.showNotification('Task name copied to clipboard!');
+                }).catch(() => {
+                    this.showNotification('Failed to copy task name.');
+                });
+            }
+
+            /* Enhanced task rendering with smart text handling */
+            renderTasks() {
+                console.log("[v0] renderTasks called, total tasks:", this.tasks.length);
+                
+                const pendingTasks = this.tasks.filter(task => task.status === 'pending');
+                const completedTasks = this.tasks.filter(task => task.status === 'completed');
+                const recycleTasks = this.tasks.filter(task => task.status === 'recycle');
+                
+                console.log("[v0] Pending tasks:", pendingTasks.length);
+                console.log("[v0] Completed tasks:", completedTasks.length);
+                console.log("[v0] Recycle tasks:", recycleTasks.length);
+
+                if (this.pendingList) {
+                    this.pendingList.innerHTML = this.renderTaskList(pendingTasks, 'pending');
+                }
+                if (this.completedList) {
+                    this.completedList.innerHTML = this.renderTaskList(completedTasks, 'completed');
+                }
+                if (this.recycleList) {
+                    this.recycleList.innerHTML = this.renderTaskList(recycleTasks, 'recycle');
+                }
+
+                this.setupDragAndDrop();
+                this.updateLiveTasksCount();
+            }
+
+            renderTaskList(tasks, listType) {
+                if (tasks.length === 0) {
+                    return '<div class="empty-state">No tasks here yet.</div>';
+                }
+
+                return tasks.map(task => {
+                    let actions = '';
+                    
+                    if (listType === 'pending') {
+                        actions = `
+                            <button class="task-btn btn-live" onclick="taskManager.toggleLive(${task.id})">
+                                ${task.isLive ? 'Remove Live' : 'Go Live'}
+                            </button>
+                            <button class="task-btn btn-complete" onclick="taskManager.completeTask(${task.id})">Complete</button>
+                            <button class="task-btn btn-delete" onclick="taskManager.deleteTask(${task.id})">Delete</button>
+                        `;
+                    } else if (listType === 'completed') {
+                        actions = `
+                            <button class="task-btn btn-delete" onclick="taskManager.deleteTask(${task.id})">Delete</button>
+                        `;
+                    } else if (listType === 'recycle') {
+                        actions = `
+                            <button class="task-btn btn-restore" onclick="taskManager.restoreTask(${task.id})">Restore</button>
+                            <button class="task-btn btn-delete" onclick="taskManager.deleteTask(${task.id})">Delete Forever</button>
+                        `;
+                    }
+
+                    // Smart text handling logic
+                    const taskNameClass = 'task-name';
+
+                    return `
+                        <div class="task-item ${task.isLive ? 'live' : ''}" draggable="true" data-task-id="${task.id}">
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <div class="task-id">ID: ${task.id}</div>
+                                </div>
+                                <div class="${taskNameClass}" onclick="taskManager.copyTaskName('${task.name.replace(/'/g, "\\'")}')" title="${task.name}">${task.name}</div>
+                                <div class="task-actions">${actions}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            /* Enhanced drag and drop to only swap positions of two specific tasks */
+            setupDragAndDrop() {
+                let draggedElement = null;
+                let draggedOverElement = null;
+
+                document.addEventListener('dragstart', (e) => {
+                    if (e.target.classList.contains('task-item')) {
+                        draggedElement = e.target;
+                        e.target.classList.add('dragging');
+                        e.target.style.opacity = '0.5';
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/html', e.target.outerHTML);
+                    }
+                });
+
+                document.addEventListener('dragend', (e) => {
+                    if (e.target.classList.contains('task-item')) {
+                        e.target.classList.remove('dragging');
+                        e.target.style.opacity = '1';
+                        draggedElement = null;
+                        draggedOverElement = null;
+                        // Remove all drag indicators
+                        document.querySelectorAll('.task-item').forEach(item => {
+                            item.classList.remove('drag-over');
+                        });
+                    }
+                });
+
+                document.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const taskItem = e.target.closest('.task-item');
+                    const taskList = e.target.closest('.tasks');
+                    
+                    if (taskList) {
+                        taskList.classList.add('drag-over');
+                    }
+                    
+                    if (taskItem && taskItem !== draggedElement) {
+                        // Remove previous drag-over indicators
+                        document.querySelectorAll('.task-item').forEach(item => {
+                            item.classList.remove('drag-over');
+                        });
+                        taskItem.classList.add('drag-over');
+                        draggedOverElement = taskItem;
+                    }
+                });
+
+                document.addEventListener('dragleave', (e) => {
+                    const taskList = e.target.closest('.tasks');
+                    const taskItem = e.target.closest('.task-item');
+                    
+                    if (taskItem && !taskItem.contains(e.relatedTarget)) {
+                        taskItem.classList.remove('drag-over');
+                    }
+                    
+                    if (taskList && !taskList.contains(e.relatedTarget)) {
+                        taskList.classList.remove('drag-over');
+                    }
+                });
+
+                document.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const taskList = e.target.closest('.tasks');
+                    if (taskList) {
+                        taskList.classList.remove('drag-over');
+                    }
+
+                    // Remove all drag indicators
+                    document.querySelectorAll('.task-item').forEach(item => {
+                        item.classList.remove('drag-over');
+                    });
+
+                    if (!draggedElement) return;
+
+                    const draggedTaskId = parseInt(draggedElement.dataset.taskId);
+                    const targetTaskItem = e.target.closest('.task-item');
+                    
+                    if (targetTaskItem && targetTaskItem !== draggedElement) {
+                        // Swap positions of only these two tasks
+                        const targetTaskId = parseInt(targetTaskItem.dataset.taskId);
+                        this.swapTaskPositions(draggedTaskId, targetTaskId);
+                    } else {
+                        // Move to different list
+                        const newStatus = taskList.dataset.list;
+                        if (newStatus) {
+                            this.moveTaskToList(draggedTaskId, newStatus);
+                        }
+                    }
+                });
+            }
+
+            swapTaskPositions(taskId1, taskId2) {
+                const task1 = this.tasks.find(t => t.id === taskId1);
+                const task2 = this.tasks.find(t => t.id === taskId2);
+                
+                if (!task1 || !task2 || task1.status !== task2.status) return;
+
+                // Get all tasks in the same status
+                const tasksInSameStatus = this.tasks.filter(t => t.status === task1.status);
+                
+                // Find indices of the two tasks
+                const index1 = tasksInSameStatus.findIndex(t => t.id === taskId1);
+                const index2 = tasksInSameStatus.findIndex(t => t.id === taskId2);
+                
+                if (index1 === -1 || index2 === -1) return;
+
+                // Swap only these two tasks by exchanging their creation times
+                const tempCreatedAt = task1.createdAt;
+                task1.createdAt = task2.createdAt;
+                task2.createdAt = tempCreatedAt;
+
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification('Tasks swapped successfully!');
+            }
+
+            moveTaskToList(taskId, newStatus) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (!task) return;
+
+                const oldStatus = task.status;
+                task.status = newStatus;
+
+                if (task.isLive && newStatus !== 'pending') {
+                    task.isLive = false;
+                    this.liveTasksCount--;
+                }
+
+                if (newStatus === 'completed' && oldStatus === 'pending') {
+                    task.completedAt = new Date().toISOString();
+                }
+
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification(`Task moved to ${newStatus}.`);
+            }
+
+            changeTheme(themeName) {
+                // Remove all theme classes
+                document.body.className = '';
+                // Add new theme class
+                document.body.classList.add(`theme-${themeName}`);
+                
+                // Update active theme button
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                const activeBtn = document.querySelector(`[data-theme="${themeName}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+                
+                localStorage.setItem('selectedTheme', themeName);
+                this.showNotification(`Theme changed to ${themeName.replace('-', ' ')}.`);
+            }
+
+            showNotification(message) {
+                this.notification.textContent = message;
+                this.notification.classList.add('show');
+                setTimeout(() => {
+                    this.notification.classList.remove('show');
+                }, 3000);
+            }
+
+            saveTasks() {
+                localStorage.setItem('tasks', JSON.stringify(this.tasks));
+            }
+        }
+
+        // Initialize the task manager when the page loads
+        let taskManager;
+        document.addEventListener('DOMContentLoaded', () => {
+            taskManager = new TaskManager();
+            
+            const savedTheme = localStorage.getItem('selectedTheme') || 'monterey';
+            taskManager.changeTheme(savedTheme);
+        });
+    </script>
+</body>
+</html>
